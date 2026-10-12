@@ -1,54 +1,113 @@
-# Лабораторная работа №1
-**Тема:** Моделирование динамических систем на C++ с использованием CMake  
-**Студент:** Группа as06818, №18  
+<p align="center">Министерство образования Республики Беларусь</p>
+<p align="center">Учреждение образования</p>
+<p align="center">“Брестский Государственный технический университет”</p>
+<p align="center">Кафедра ИИТ</p>
+<br><br><br><br><br><br><br>
+<p align="center">Лабораторная работа №1</p>
+<p align="center">По дисциплине “Теория и моделирование автоматического управления”</p>
+<p align="center">Тема: “Моделирование объектов управления”</p>
+<br><br><br><br><br>
+<p align="right">Выполнил:</p>
+<p align="right">Студент 3 курса</p>
+<p align="right">Группы АС-68</p>
+<p align="right">Хотько И.А.</p>
+<p align="right">Проверил:</p>
+<p align="right">Дворанинович Д. А.</p>
+<br><br><br><br><br>
+<p align="center">Брест 2026</p>
 
----
+## Вариант 18
 
-## Цель работы
-Реализовать симуляцию математических моделей систем управления на языке C++ с применением принципов объектно-ориентированного программирования (ООП), выполнить сборку с помощью CMake и визуализировать результаты реакции систем на различные входные воздействие.
+- Линейная модель: **Model 1.8**
+- Нелинейная модель: **Model 2.2**
+- Дифференциальное уравнение: **Model 3.6**
 
----
+## Реализованные модели
 
-## Вариант задания
-Вариант включает три модели:
-1. **Model 1.8 (Generalized Autoregressive Linear Model):**
-   $$y_{\tau + 1} = a_1 y_\tau + a_2 y_{\tau - 1} + b_1 u_\tau + b_2 u_{\tau - 1}$$
-2. **Model 2.2 (Actuator Saturation Non-linearity):**
-   $$y_{\tau + 1} = a y_\tau + b \cdot \text{sat}(u_\tau)$$
-3. **Model 3.6 (Cubic Growth and Control):**
-   $$\frac{dy}{dt} = a y^3 + b u \quad \xrightarrow{\text{Euler}} \quad y_{\tau+1} = y_\tau + (a y_\tau^3 + b u_\tau) \cdot dt$$
+### Model 1.8 (Generalized Autoregressive Linear Model)
+$$y_{\tau+1} = a_1 y_{\tau} + a_2 y_{\tau-1} + b_1 u_{\tau} + b_2 u_{\tau-1}$$
 
-Входные воздействия $u_\tau$:
-* **Ступенчатое:** $u_\tau = 1$
-* **Импульсное:** $u_0 = 1, u_{\tau > 0} = 0$
-* **Гармоническое:** $u_\tau = \sin(\tau)$
+Параметры: $a_1 = 0.5$, $a_2 = 0.2$, $b_1 = 0.3$, $b_2 = 0.1$
 
----
+### Model 2.2 (Actuator Saturation Non-linearity)
+$$y_{\tau+1} = a y_{\tau} + b \cdot \text{sat}(u_{\tau})$$
 
-## Архитектура программы (UML)
+Параметры: $a = 0.7$, $b = 0.5$, $u_{min} = -0.5$, $u_{max} = 0.5$
 
-```text
-+-------------------------------------------------------+
-|                       <<abstract>>                    |
-|                          Model                        |
-+-------------------------------------------------------+
-| + virtual ~Model()                                    |
-| + virtual step(u: double): double = 0                 |
-| + virtual reset(): void = 0                           |
-| + simulate(n: int, type: InputType): vector<StepResult>|
-+-------------------------------------------------------+
-                           ^
-                           |
-       +-------------------+-------------------+
-       |                   |                   |
-+---------------+   +---------------+   +---------------+
-|   Model1_8    |   |   Model2_2    |   |   Model3_6    |
-+---------------+   +---------------+   +---------------+
-| - a1, a2: dbl |   | - a, b: dbl   |   | - a, b, dt: dbl|
-| - b1, b2: dbl |   | - u_min/max   |   | - y_curr: dbl |
-| - y_curr, y_prev  | - y_curr: dbl |   +---------------+
-| - u_prev: dbl |   +---------------+   | + step(): dbl |
-+---------------+   | + step(): dbl |   | + reset(): void|
-| + step(): dbl |   | + sat(): dbl  |   +---------------+
-| + reset(): void|  | + reset(): void|
-+---------------+   +---------------+
+### Model 3.6 (Cubic Growth and Control)
+$$\frac{dy}{dt} = a y^3 + b u \implies y_{\tau+1} = y_{\tau} + (a y_{\tau}^3 + b u_{\tau}) \cdot \Delta t$$
+
+Параметры: $a = -0.1$, $b = 0.5$, $\Delta t = 0.1$
+
+## Входные воздействия
+
+1. Ступенчатое (Step): $u_{\tau} = 1$
+2. Импульсное (Impulse): $u_0 = 1, u_{\tau > 0} = 0$
+3. Гармоническое (Harmonic): $u_{\tau} = \sin(\tau)$
+
+## ООП Архитектура
+
+Создан абстрактный базовый класс `Model` с чистыми виртуальными методами `step()` и `reset()`, а также виртуальным методом `simulate()`.
+
+От базового класса наследуются:
+- `Model1_8`
+- `Model2_2`
+- `Model3_6`
+
+## Результаты моделирования
+
+### 1. Переходные процессы линейной модели (Model 1.8)
+![Линейная модель](model1_8.png)
+
+### 2. Переходные процессы нелинейной модели (Model 2.2)
+![Нелинейная модель](model2_2.png)
+
+### 3. Переходные процессы дифференциальной модели (Model 3.6)
+![Дифференциальная модель](model3_6.png)
+
+## UML Диаграмма классов
+
+```mermaid
+classDiagram
+    class Model {
+        <<abstract>>
+        +step(double u)* double
+        +reset()* void
+        +simulate(int n, InputType input_type) vector~StepResult~
+    }
+
+    class Model1_8 {
+        -double a1
+        -double a2
+        -double b1
+        -double b2
+        -double y_curr
+        -double y_prev
+        -double u_prev
+        +step(double u) double
+        +reset() void
+    }
+
+    class Model2_2 {
+        -double a
+        -double b
+        -double u_min
+        -double u_max
+        -double y_curr
+        -sat(double u) double
+        +step(double u) double
+        +reset() void
+    }
+
+    class Model3_6 {
+        -double a
+        -double b
+        -double dt
+        -double y_curr
+        +step(double u) double
+        +reset() void
+    }
+
+    Model <|-- Model1_8
+    Model <|-- Model2_2
+    Model <|-- Model3_6
